@@ -1,0 +1,330 @@
+//KC03GC1A JOB ,'MYERS_ALQAISI',MSGCLASS=H                              00010000
+//*                                                                     00020000
+//************************************************************          00030000
+//*                                                          *          00040000
+//* CSCI 465/565 - FALL 2017                                 *          00050000
+//*                                                          *          00060000
+//* ASSIGNMENT 4 - INTRODUCTION TO COBOL                     *          00070000
+//*                                                          *          00080000
+//* PROGRAMMERS: ZUBAIDAH ALQAISI                            *          00090000
+//*                                                          *          00100000
+//* DUE DATE: 10/6/2017                                      *          00110000
+//* DUE TIME: 11:59 PM                                       *          00120000
+//*                                                          *          00130000
+//* PROGRAM FUNCTION:                                        *          00140000
+//*                                                          *          00150000
+//* THIS PROGRAM SERVES AS AN INTRODUCTION TO WRITING COBOL  *          00160000
+//* WHERE FIRST THE COBOL CODE IS ASSEMBLED, SENT TO THE     *          00170000
+//* TO THE BINDER AND THEN FETCHED AND EXECUTED.             *          00180000
+//*                                                          *          00190000
+//************************************************************          00200000
+//*                                                                     00210000
+//************************************************************          00220000
+//*                                                          *          00230000
+//* JSTEP01 CALLS THE COBOL PROGRAM MODULE AND COMPILES      *          00240000
+//* THE COBOL SOURCE CODE INSTREAM.                          *          00250000
+//*                                                          *          00260000
+//* DDNAME               FILE DESCRIPTION                    *          00270000
+//*                                                          *          00280000
+//* SYSLIB     INPUT:  CALLS THE IBM MACRO LIBRARY           *          00290000
+//* SYSIN      INPUT:  BEGINS INSTREAM COBOL SOURCE CODE     *          00300000
+//* SYSLIN     INPUT:  A TEMPORARY DATA TO PASS TO THE       *          00310000
+//*                    BINDER IN JSTEP02                     *          00320000
+//* SYSPRINT   OUTPUT: SOURCE LISTING AND DIAGNOSTIC         *          00330000
+//*                    MESSAGES                              *          00340000
+//* SYSUT1-15  INPUT:  SCRATCH DATASET FOR COMPLING          *          00350000
+//* SYSMDECK   INPUT:  SCRATCH DATA SET REQUIRED BY COBOL    *          00360000
+//*                                                          *          00370000
+//************************************************************          00380000
+//*                                                                     00390000
+//JSTEP01  EXEC PGM=IGYCRCTL,                                           00400000
+//         REGION=0M,                                                   00410000
+//         PARM='FLAG(I,I),APOST'                                       00420000
+//*                                                                     00430000
+//SYSLIB   DD DSN=SYS1.MACLIB,                                          00440000
+//            DISP=SHR                                                  00450000
+//*                                                                     00460000
+//SYSIN    DD *                                                         00470000
+      ****************************************************************  00480000
+      *                                                              *  00490000
+      * PROGRAM NAME:  ASSIGN4                                       *  00500000
+      *                                                              *  00500100
+      * FUNCTION:  THIS PROGRAM READS INPUT DATA RECORDS AND THEN    *  00501000
+      *            WRITES THEM TO STANDARD OUTPUT.                   *  00502000
+      *                                                              *  00503000
+      * INPUT: AN INPUT RECORD THAT CONTAINS BRANCH NAME, BROKER     *  00504000
+      *        NAME, DEPOSIT AMOUNT, AND COMMISSION PERCENTAGE.      *  00505000
+      *                                                              *  00505100
+      * OUTPUT: EACH RECORD IS PRINTED TO STANDARD OUTPUT, DOUBLE    *  00506000
+      *         SPACED, AND FORMATTED WITH A FLOATING DOLLAR AMOUNT. *  00506100
+      *         THE DEPOSIT TOTALS ARE ACCUMMULATED AND PRINTED TO   *  00506200
+      *         STANDARD OUTPUT AT THE END OF THE REPORT.            *  00506300
+      *                                                              *  00506400
+      * ENTRY CONDITIONS: NONE                                       *  00506500
+      *                                                              *  00506600
+      * EXIT CONDITIONS: NONE                                        *  00506700
+      *                                                              *  00506800
+      * NOTES: NONE                                                  *  00506900
+      *                                                              *  00507000
+      ****************************************************************  00508000
+                                                                        00508100
+       IDENTIFICATION DIVISION.                                         00509000
+                                                                        00509100
+       PROGRAM-ID.    ASSIGN4.                                          00509200
+       AUTHOR.        MITCH MYERS AND ZUBAIDAH ALQAISI.                 00509300
+       DATE-WRITTEN.  10/01/2017.                                       00509400
+       DATE-COMPILED.                                                   00509500
+                                                                        00509600
+       ENVIRONMENT DIVISION.                                            00509700
+                                                                        00509800
+       INPUT-OUTPUT SECTION.                                            00509900
+                                                                        00510000
+       FILE-CONTROL.                                                    00510100
+           SELECT INPUT-FILE ASSIGN TO COBIN4.                          00510200
+           SELECT PRINT-FILE ASSIGN TO COBOUT4.                         00511000
+                                                                        00511100
+       DATA DIVISION.                                                   00512000
+                                                                        00512100
+       FILE SECTION.                                                    00513000
+                                                                        00513100
+      ****************************************************************  00514000
+      * THE INPUT FILE IS A FILE THAT IS USED AS INPUT. THIS FILE    *  00515000
+      * CONTAINS AN UNKNOWN NUMBER OF RECORDS. EACH RECORD IN THIS   *  00516000
+      * FILE CONTAINS A BRANCH NAME, BROKER NAME, DEPOSIT AMOUNT     *  00517000
+      * AND A COMMISSION PERCENTAGE.                                 *  00518000
+      ****************************************************************  00519000
+                                                                        00519100
+       FD  INPUT-FILE                                                   00520000
+           RECORDING MODE IS F.                                         00521000
+                                                                        00521100
+       01  INPUT-RECORD                    PIC X(80).                   00522000
+                                                                        00522100
+      ****************************************************************  00523000
+      * PRINT FILE CONTAINS A GENERIC PRINT LINE THAT IS USED TO     *  00524000
+      * PRINT EACH LINE OF THE RECORD.                               *  00525000
+      ****************************************************************  00526000
+                                                                        00527000
+       FD  PRINT-FILE                                                   00531900
+           RECORDING MODE IS F.                                         00532000
+                                                                        00532100
+       01  PRINT-RECORD                    PIC X(132).                  00532200
+                                                                        00532300
+       WORKING-STORAGE SECTION.                                         00532400
+                                                                        00532500
+      ****************************************************************  00532600
+      * VARIABLES:                                                   *  00532700
+      *                                                              *  00532800
+      * EOF-FLAG        CHANGED TO 'Y' WHEN END OF FILE OCCURS.      *  00532900
+      *                                                              *  00533000
+      * I-BRANCH-NME    THE BRANCH NAME LISTED IN THE RECORD.        *  00533100
+      *                                                              *  00533200
+      * I-BROKER-NAME   THE BROKER NAME LISTED IN THE RECORD.        *  00533300
+      *                                                              *  00533400
+      * I-DEP-AMT       THE DEPOSIT AMOUNT LISTED IN THE RECORD.     *  00533500
+      *                                                              *  00533600
+      * I-COMM-FLAG     THE COMMISSION PERCENTED LISTED IN THE       *  00533700
+      *                 RECORD.                                      *  00533800
+      *                                                              *  00533900
+      * O-BRANCH-NME    THE BRANCH NAME WRITTEN TO OUTPUT.           *  00534000
+      *                                                              *  00534100
+      * O-BROKER-NME    THE BROKER NAME WRITTEN TO OUTPUT.           *  00534200
+      *                                                              *  00534300
+      * O-DEP-AMT       THE DEPOSIT AMOUNT ZONED DECIMAL, FORMATTED  *  00534400
+      *                 TO DISPLAY IN A FLOATING DOLLAR SIGN FORMAT  *  00534500
+      *                 WRITTEN TO OUTPUT.                           *  00534600
+      *                                                              *  00534700
+      * O-COMM-FLAG     THE COMMISSION PERCENTAGE WRITTEN TO OUTPUT. *  00534800
+      *                                                              *  00534900
+      * TOTAL-DEP-AMT   STORES THE TOTAL ACCUMMULATED VALUE OF THE   *  00535200
+      *                 DEPOSIT AMOUNTS FROM THE INPUT RECORD AS A   *  00535300
+      *                 ZONED DECIMAL.                               *  00535400
+      *                                                              *  00535500
+      * O-TOTAL-DEP-AMT WRITES THE TOTAL ACCUMMULATED DEPOSIT TOTAL  *  00535600
+      *                 TO OUTPUT IN A FLOATING DOLLAR SIGN FORMAT.  *  00535700
+      *                                                              *  00535800
+      ****************************************************************  00535900
+                                                                        00536000
+       01  FLAGS.                                                       00536100
+           05  EOF-FLAG                    PIC X VALUE 'N'.             00536200
+                                                                        00536300
+       01  DEP-RECORD.                                                  00536400
+           05  I-BRANCH-NME                PIC X(25).                   00536500
+           05  I-BROKER-NME                PIC X(25).                   00536600
+           05  I-DEP-AMT                   PIC S9(11)V99.               00536700
+           05  FILLER                      PIC X.                       00536800
+           05  I-COMM-FLAG                 PIC 9.                       00536900
+           05  FILLER                      PIC X(15).                   00537000
+                                                                        00537100
+       01  BROKER-DET1.                                                 00537200
+           05  O-BRANCH-NME                PIC X(25).                   00537300
+           05  FILLER                      PIC X(20) VALUE SPACES.      00537400
+           05  O-BROKER-NME                PIC X(25).                   00537500
+           05  FILLER                      PIC X(20) VALUE SPACES.      00537600
+           05  O-DEP-AMT                   PIC $$,$$$,$$$,$$9.99.       00537700
+           05  FILLER                      PIC X(22) VALUE SPACES.      00537800
+           05  O-COMM-FLAG                 PIC Z9.                      00537900
+                                                                        00538100
+       01  COUNTERS.                                                    00538200
+           05  TOTAL-DEP-AMT               PIC S9(12)V99 VALUE 0.       00538300
+                                                                        00538400
+       01  O-COUNTERS.                                                  00538500
+           05  FILLER                      PIC X(89)  VALUE SPACES.     00538600
+           05  O-TOTAL-DEP-AMT             PIC $$$,$$$,$$$,$$9.99.      00538900
+                                                                        00539000
+       PROCEDURE DIVISION.                                              00539100
+                                                                        00539200
+      ****************************************************************  00539300
+      * 0000-MAIN. THIS ROUTINE CONROLS THE FLOW OF THE PROGRAM.     *  00539400
+      * IT FIRST OPENS THE INPUT FILE, DOES AN INITIAL PRIMING       *  00539500
+      * READ TO SKIP OVER THE FIRST RECORD, READS THE INPUT FILE,    *  00539600
+      * WRITES THE RECORDS, WRITES THE TOTAL ACCUMMULATED VALUE,     *  00539700
+      * AND CLOSES THE INPUT AND PRINT FILES.                        *  00539800
+      ****************************************************************  00539900
+                                                                        00540000
+       0000-MAIN.                                                       00540100
+                                                                        00540200
+           OPEN INPUT  INPUT-FILE                                       00540300
+                OUTPUT PRINT-FILE.                                      00540400
+                                                                        00540500
+           READ INPUT-FILE                                              00540600
+             AT END MOVE 'Y' TO EOF-FLAG                                00540700
+           END-READ.                                                    00540800
+                                                                        00540900
+           READ INPUT-FILE INTO DEP-RECORD                              00541000
+             AT END MOVE 'Y' TO EOF-FLAG                                00541100
+           END-READ.                                                    00541200
+                                                                        00541300
+           PERFORM 1000-WRITE-RECORDS                                   00541400
+             UNTIL EOF-FLAG = 'Y'.                                      00541500
+                                                                        00541600
+           PERFORM 2000-WRITE-TOTAL.                                    00541700
+                                                                        00541800
+           CLOSE INPUT-FILE                                             00541900
+                 PRINT-FILE.                                            00542000
+                                                                        00542100
+           GOBACK.                                                      00542200
+                                                                        00542300
+       0000-EXIT. EXIT.                                                 00542400
+                                                                        00542500
+      ****************************************************************  00542600
+      * 1000-WRITE-RECORDS THIS ROUTINE MOVES THE INPUT RECORD TO    *  00542700
+      * THE FORMATTED OUTPUT RECORD, COMPUTES A RUNNING TOTAL OF     *  00542800
+      * THE DEPOSIT AMOUNT, WRITES THE FORMATTED OUTPUT TO THE       *  00542900
+      * PRINT RECORD, AND MOVES TO THE NEXT RECORD.                  *  00543000
+      ****************************************************************  00543100
+                                                                        00543200
+       1000-WRITE-RECORDS.                                              00543300
+                                                                        00543400
+           MOVE I-BRANCH-NME TO O-BRANCH-NME.                           00543500
+           MOVE I-BROKER-NME TO O-BROKER-NME.                           00543600
+           MOVE I-DEP-AMT TO O-DEP-AMT.                                 00543700
+           MOVE I-COMM-FLAG TO O-COMM-FLAG.                             00543800
+                                                                        00543900
+           COMPUTE TOTAL-DEP-AMT ROUNDED =                              00544000
+                   TOTAL-DEP-AMT + I-DEP-AMT.                           00544100
+                                                                        00544200
+           WRITE PRINT-RECORD FROM BROKER-DET1 AFTER 2.                 00544300
+                                                                        00544400
+           READ INPUT-FILE INTO DEP-RECORD                              00544500
+             AT END MOVE 'Y' TO EOF-FLAG                                00544600
+           END-READ.                                                    00544700
+                                                                        00544800
+       1000-EXIT. EXIT.                                                 00544900
+                                                                        00545000
+      ****************************************************************  00545100
+      * 2000-WRITE-TOTAL THIS ROUTINE MOVES THE ACCUMMULATED         *  00545200
+      * RUNNING TOTAL TO THE FORMATTED OUTPUT FIELD, AND THEN        *  00545300
+      * PRINTS THE ACCUMMULATED TOTAL TO OUTPUT.                     *  00545400
+      ****************************************************************  00545500
+                                                                        00545600
+       2000-WRITE-TOTAL.                                                00545700
+                                                                        00545800
+           MOVE TOTAL-DEP-AMT TO O-TOTAL-DEP-AMT.                       00545900
+                                                                        00546000
+           WRITE PRINT-RECORD FROM O-COUNTERS AFTER 2.                  00546100
+                                                                        00546200
+       2000-EXIT. EXIT.                                                 00546300
+/*                                                                      00546400
+//SYSLIN   DD DSN=&&OBJMOD,                                             00546500
+//            SPACE=(CYL,(1,1)),                                        00547000
+//            DISP=(MOD,PASS)                                           00550000
+//*                                                                     00560000
+//SYSPRINT DD SYSOUT=*                                                  00570000
+//*                                                                     00580000
+//SYSUT1   DD SPACE=(3040,(40,40),,,ROUND)                              00590000
+//SYSUT2   DD SPACE=(3040,(40,40),,,ROUND)                              00600000
+//SYSUT3   DD SPACE=(3040,(40,40),,,ROUND)                              00610000
+//SYSUT4   DD SPACE=(3040,(40,40),,,ROUND)                              00620000
+//SYSUT5   DD SPACE=(3040,(40,40),,,ROUND)                              00630000
+//SYSUT6   DD SPACE=(3040,(40,40),,,ROUND)                              00640000
+//SYSUT7   DD SPACE=(3040,(40,40),,,ROUND)                              00650000
+//SYSUT8   DD SPACE=(3040,(40,40),,,ROUND)                              00660000
+//SYSUT9   DD SPACE=(3040,(40,40),,,ROUND)                              00670000
+//SYSUT10  DD SPACE=(3040,(40,40),,,ROUND)                              00680000
+//SYSUT11  DD SPACE=(3040,(40,40),,,ROUND)                              00690000
+//SYSUT12  DD SPACE=(3040,(40,40),,,ROUND)                              00700000
+//SYSUT13  DD SPACE=(3040,(40,40),,,ROUND)                              00710000
+//SYSUT14  DD SPACE=(3040,(40,40),,,ROUND)                              00720000
+//SYSUT15  DD SPACE=(3040,(40,40),,,ROUND)                              00730000
+//SYSMDECK DD SPACE=(CYL,(1,1))                                         00740000
+//*                                                                     00750000
+//***********************************************************           00760000
+//*                                                         *           00770000
+//* JSTEP02 CALLS THE BINDER OR LOAD MODULE TO BIND THE     *           00780000
+//* OBJECT MODULE TO CREATE AN EXECUTABLE PROGRAM OBJECT    *           00790000
+//* OF THE COBOL PROGRAM.                                   *           00800000
+//*                                                         *           00810000
+//* DDNAME                 FILE DESCRIPTION                 *           00820000
+//*                                                         *           00830000
+//* SYSLIB   INPUT:  OBJECT MODULE FOR COBOL                *           00840000
+//* SYSLIN   INPUT:  TEMPORARY OBJECT MODULE REFERENCED IN  *           00850000
+//*                  JSTEP01                                *           00860000
+//* SYSLMOD  INPUT:  THE PROGRAM OBJECT CREATED BY THE      *           00870000
+//*                  BINDER AND STORED IN A PDSE            *           00880000
+//* SYSPRINT OUTPUT: MESSAGES FROM THE BINDER               *           00890000
+//*                                                         *           00900000
+//***********************************************************           00910000
+//*                                                                     00920000
+//JSTEP02  EXEC PGM=HEWL,COND=(0,LT)                                    00930000
+//*                                                                     00940000
+//SYSLIB   DD DSN=CEE.SCEELKED,                                         00950000
+//            DISP=SHR                                                  00960000
+//*                                                                     00970000
+//SYSLIN   DD DSN=&&OBJMOD,                                             00980000
+//            DISP=(OLD,DELETE,DELETE)                                  00990000
+//*                                                                     01000000
+//SYSLMOD  DD DSN=KC03GC1.CSCI465.LOADLIB(ASSIGN4),                     01010001
+//            SPACE=(1024,(50,20,1)),                                   01020000
+//            DSNTYPE=LIBRARY,                                          01030000
+//            DISP=(MOD,KEEP,KEEP)                                      01040000
+//*                                                                     01050000
+//SYSPRINT DD SYSOUT=*                                                  01060000
+//*                                                                     01070000
+//***********************************************************           01080000
+//*                                                         *           01090000
+//* JSTEP03 FETCHES AND EXECUTES THE OBJECT MODULE FROM THE *           01100000
+//* THE BINDER AND PRINTS TO STANDARD OUTPUT                *           01110000
+//*                                                         *           01120000
+//* DD NAME                  FILE DESCRIPTION               *           01130000
+//*                                                         *           01140000
+//* STEPLIB  INPUT: LOCATION OF THE LOAD LIBRARY PDSE       *           01150000
+//* COBIN4   INPUT: THE NAME AND LOCATION OF THE INPUT FILE *           01160000
+//* COBOUT4  OUTPUT: THE OUTPUT OF THE PROGRAM AFTER        *           01170000
+//*                  EXECUTION PRINTED TO SCREEN            *           01180000
+//* SYSUDUMP OUTPUT: DIAGNOSTIC MESSAGSES IF THE PROGRAM    *           01190000
+//*                  ABENDS                                 *           01200000
+//*                                                         *           01210000
+//***********************************************************           01220000
+//*                                                                     01230000
+//JSTEP03  EXEC PGM=ASSIGN4,COND=(0,LT)                                 01240000
+//*                                                                     01250000
+//STEPLIB  DD DSN=KC03GC1.CSCI465.LOADLIB,                              01260001
+//            DISP=SHR                                                  01270000
+//*                                                                     01280000
+//COBIN4   DD DSN=KC02322.CSCI465.DATAFA17(DATA4),                      01290000
+//            DISP=SHR                                                  01300000
+//*                                                                     01310000
+//COBOUT4  DD SYSOUT=*                                                  01320000
+//*                                                                     01330000
+//SYSUDUMP DD SYSOUT=*                                                  01340000
+//                                                                      01350000
